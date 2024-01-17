@@ -5,6 +5,7 @@ class HashMap {
     this.capacity = 16;
     this.buckets = new Array(this.capacity).fill(null);
     this.keyList = new Array(this.capacity).fill(null);
+    this.size = 0;
     this.loadFactor = 0.75;
   }
 
@@ -19,6 +20,7 @@ class HashMap {
     return hashCode;
   }
 
+  // resizes the hash map to double its capacity
   resize() {
     this.capacity *= 2;
 
@@ -38,23 +40,25 @@ class HashMap {
     }
   }
 
-  // takes two arguments, the first is a key and the second is a value that is
-  // assigned to this key. If a key already exists, then the old value is overwritten.
+  // sets a key and value pair in the hash map.
+  // If the key already exists, the value should be replaced with the new value.
   set(key, value) {
     const hashedKey = HashMap.#hash(key);
     const hashedIndex = hashedKey % this.capacity;
 
+    if (this.keyList[hashedIndex] === null) {
+      this.size++;
+    }
     this.keyList[hashedIndex] = key;
     this.buckets[hashedIndex] = value;
 
     const reachedLimit = this.length() / this.capacity > this.loadFactor;
-    console.log(reachedLimit);
     if (reachedLimit) {
       this.resize();
     }
   }
 
-  // takes one argument as a key and returns the value that is assigned to this key.
+  // Returns the value associated with a key.
   // If key is not found, return null
   get(key) {
     if (!this.has(key)) {
@@ -67,8 +71,7 @@ class HashMap {
     return value;
   }
 
-  // takes a key as an argument and returns true or false based on whether or
-  // not the key is in the hash map.
+  // Returns true if the key exists in the hash map and false if not.
   has(key) {
     const hashedKey = HashMap.#hash(key);
     const hashedIndex = hashedKey % this.capacity;
@@ -78,37 +81,34 @@ class HashMap {
     return false;
   }
 
-  // takes a key as an argument. If the given key is in the hash map, it should
-  // remove the entry with that key and return true.
-  // If the key isn’t in the hash map, it should return false.
+  // removes a key-value pair by key.
+  // If key is not found, return false.
+  // If key is found, remove the key-value pair and return true.
   remove(key) {
     if (!this.has(key)) {
       return false;
     }
 
+    this.size--;
     this.keyList = this.keyList.filter((k) => k !== key);
     const hashedKey = HashMap.#hash(key);
     const hashedIndex = hashedKey % this.capacity;
+    this.keyList[hashedIndex] = null;
     this.buckets[hashedIndex] = null;
     return true;
   }
 
   // returns the number of stored keys in the hash map.
   length() {
-    var count = 0;
-    for (let i = 0; i < this.keyList.length; i++) {
-      if (this.keyList[i] !== null) {
-        count++;
-      }
-    }
-    return count;
+    return this.size;
   }
 
   // removes all entries in the hash map.
   clear() {
     this.capacity = 16;
+    this.size = 0;
     this.buckets = new Array(this.capacity).fill(null);
-    this.keyList = new Array();
+    this.keyList = new Array(this.capacity).fill(null);
   }
 
   // returns an array containing all the keys inside the hash map
@@ -196,6 +196,3 @@ for (let item of [
 ]) {
   hashMap.set(item[0], item[1]);
 }
-console.log(hashMap.buckets);
-
-console.log(hashMap.entries());
